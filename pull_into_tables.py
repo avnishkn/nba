@@ -1,23 +1,20 @@
-# Import required packages
 import requests
 import mysql.connector
 
-# Define the RapidAPI host and key
 headers = {
     'x-rapidapi-host': 'api-nba-v1.p.rapidapi.com',
-    'x-rapidapi-key': 'a50d03db25msha9a23e5cea23335p1fe493jsn77ec3bcc215a'  # Replace with your RapidAPI key
+    'x-rapidapi-key': # Insert RapidAPI key
 }
 
-# Connect to the MySQL database
 cnx = mysql.connector.connect(
     host='localhost',
     user='root',
-    password='Moose149.M',
-    database='nba_database2'
+    password= # Insert password,
+    database='nba_database'
 )
 cursor = cnx.cursor()
 
-# Create teams table
+# Create tables for teams and players
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS teams (
     team_id INT PRIMARY KEY,
@@ -25,7 +22,6 @@ CREATE TABLE IF NOT EXISTS teams (
 )
 ''')
 
-# Create players table
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS players (
     player_name VARCHAR(255),
@@ -34,7 +30,7 @@ CREATE TABLE IF NOT EXISTS players (
 )
 ''')
 
-# Fetch all NBA teams
+# Fetch all NBA teams and players to populate tables
 teams_response = requests.get('https://api-nba-v1.p.rapidapi.com/teams', headers=headers)
 teams_data = teams_response.json()
 team_values = [(team['id'], team['name']) for team in teams_data['response']]
@@ -42,7 +38,6 @@ insert_teams_data = 'INSERT IGNORE INTO teams (team_id, team_name) VALUES (%s, %
 cursor.executemany(insert_teams_data, team_values)
 cnx.commit()
 
-# Fetch players for each team, limiting to the first 30 teams
 for team in teams_data['response'][:30]:
     team_id = team
     querystring = {"team":team_id,"season":"2022"}
@@ -51,7 +46,6 @@ for team in teams_data['response'][:30]:
         players_response = requests.get('https://api-nba-v1.p.rapidapi.com/players', headers=headers, params=querystring)
         players_data = players_response.json()
 
-       # If 'response' key doesn't exist in players_data, print the team_id and continue to the next iteration
         if 'response' not in players_data:
             print(f"No 'response' key for team id: {team_id}")
             continue
